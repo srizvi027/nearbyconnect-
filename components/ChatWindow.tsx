@@ -13,17 +13,39 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const channelRef = useRef<any>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchMessages();
-    subscribeToMessages();
+    const cleanup = subscribeToMessages();
     markMessagesAsRead();
+    
+    return cleanup;
   }, [connection.id]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   const fetchMessages = async () => {
     try {
@@ -41,8 +63,13 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
   };
 
   const subscribeToMessages = () => {
+    // Clean up previous subscription if it exists
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+    }
+
     const channel = supabase
-      .channel(`messages:${connection.id}`)
+      .channel(`messages-${connection.id}-${Date.now()}`) // Unique channel name
       .on(
         'postgres_changes',
         {
@@ -52,16 +79,33 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
           filter: `connection_id=eq.${connection.id}`
         },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
-          if (payload.new.sender_id !== currentUserId) {
+          console.log('💬 New message received:', payload);
+          const newMsg = payload.new as Message;
+          setMessages((prev) => {
+            // Avoid duplicates
+            if (prev.find(msg => msg.id === newMsg.id)) {
+              return prev;
+            }
+            return [...prev, newMsg];
+          });
+          
+          if (newMsg.sender_id !== currentUserId) {
             markMessagesAsRead();
           }
+          
+          // Auto-scroll to bottom
+          setTimeout(scrollToBottom, 100);
         }
       )
       .subscribe();
 
+    channelRef.current = channel;
+
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
   };
 
@@ -102,6 +146,21 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const popularEmojis = [
+    '😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊',
+    '😋', '😎', '😍', '😘', '🥰', '😗', '😙', '😚', '🙂', '🤗',
+    '🤔', '🤨', '😐', '😑', '😶', '🙄', '😏', '😣', '😥', '😮',
+    '🤐', '😯', '😪', '😫', '😴', '😌', '😛', '😜', '😝', '🤤',
+    '👍', '👎', '👌', '🤞', '✌️', '🤟', '🤘', '👊', '✊', '🤛',
+    '❤️', '🧡', '💛', '💚', '💙', '💜', '🤍', '🖤', '🤎', '💔',
+    '🔥', '💯', '💫', '⭐', '🌟', '✨', '💥', '🎉', '🎊', '🎈'
+  ];
+
+  const addEmoji = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+    setShowEmojiPicker(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -194,8 +253,43 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200 bg-white rounded-b-2xl">
+      <div className="p-4 border-t border-gray-200 bg-white rounded-b-2xl relative">
+        {/* Emoji Picker */}
+        {showEmojiPicker && (
+          <div ref={emojiPickerRef} className="absolute bottom-full left-4 right-4 mb-2 bg-white border border-gray-200 rounded-xl shadow-lg p-4 z-10">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-medium text-gray-700">Choose an emoji</h3>
+              <button
+                onClick={() => setShowEmojiPicker(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="grid grid-cols-10 gap-2 max-h-48 overflow-y-auto">
+              {popularEmojis.map((emoji, index) => (
+                <button
+                  key={index}
+                  onClick={() => addEmoji(emoji)}
+                  className="text-2xl hover:bg-gray-100 rounded-lg p-1 transition-colors"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        
         <div className="flex items-end gap-2">
+          <button
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className="p-2 text-gray-500 hover:text-[#093FB4] rounded-xl transition-colors"
+            type="button"
+          >
+            <span className="text-xl">😀</span>
+          </button>
           <textarea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
@@ -210,9 +304,13 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
             disabled={loading || !newMessage.trim()}
             className="px-4 py-2 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
