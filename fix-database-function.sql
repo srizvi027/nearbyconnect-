@@ -82,6 +82,18 @@ CREATE TABLE public.messages (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Notifications Table
+CREATE TABLE public.notifications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  type TEXT CHECK (type IN ('connection_request', 'connection_accepted', 'message')) NOT NULL,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  data JSONB DEFAULT '{}',
+  is_read BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- ============================================
 -- STEP 4: CREATE INDEXES
 -- ============================================
@@ -95,6 +107,8 @@ CREATE INDEX idx_connections_user2 ON public.connections(user_id_2);
 CREATE INDEX idx_messages_connection ON public.messages(connection_id, created_at DESC);
 CREATE INDEX idx_messages_sender ON public.messages(sender_id);
 CREATE INDEX idx_messages_unread ON public.messages(connection_id, is_read) WHERE is_read = false;
+CREATE INDEX idx_notifications_user ON public.notifications(user_id, created_at DESC);
+CREATE INDEX idx_notifications_unread ON public.notifications(user_id, is_read) WHERE is_read = false;
 
 -- ============================================
 -- STEP 5: ENABLE ROW LEVEL SECURITY
@@ -104,6 +118,7 @@ ALTER TABLE public.user_locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.connection_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.connections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- STEP 6: CREATE RLS POLICIES
@@ -202,6 +217,20 @@ CREATE POLICY "messages_update_policy"
       AND (c.user_id_1 = auth.uid() OR c.user_id_2 = auth.uid())
     )
   );
+
+-- Notifications Policies
+CREATE POLICY "notifications_select_policy"
+  ON public.notifications FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "notifications_insert_policy"
+  ON public.notifications FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "notifications_update_policy"
+  ON public.notifications FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- ============================================
 -- STEP 7: CREATE FUNCTIONS
@@ -323,6 +352,96 @@ BEGIN
 END;
 $$;
 
+-- Function: Create Connection Request Notification
+CREATE OR REPLACE FUNCTION create_connection_request_notification()
+RETURNS TRIGGER 
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  sender_name TEXT;
+BEGIN
+  -- Only create notification for new requests
+  IF NEW.status = 'pending' AND (OLD IS NULL OR OLD.status != 'pending') THEN
+    -- Get sender's name
+    SELECT full_name INTO sender_name
+    FROM public.profiles
+    WHERE id = NEW.sender_id;
+    
+    -- Create notification for receiver
+    INSERT INTO public.notifications (user_id, type, title, body, data)
+    VALUES (
+      NEW.receiver_id,
+      'connection_request',
+      'New Connection Request',
+      sender_name || ' wants to connect with you',
+      jsonb_build_object(
+        'connection_request_id', NEW.id,
+        'sender_id', NEW.sender_id,
+        'sender_name', sender_name
+      )
+    );
+  END IF;
+  
+  -- Create notification when request is accepted
+  IF NEW.status = 'accepted' AND (OLD.status IS NULL OR OLD.status = 'pending') THEN
+    -- Get receiver's name for sender notification
+    SELECT full_name INTO sender_name
+    FROM public.profiles
+    WHERE id = NEW.receiver_id;
+    
+    -- Notify sender that request was accepted
+    INSERT INTO public.notifications (user_id, type, title, body, data)
+    VALUES (
+      NEW.sender_id,
+      'connection_accepted',
+      'Connection Accepted',
+      sender_name || ' accepted your connection request',
+      jsonb_build_object(
+        'connection_request_id', NEW.id,
+        'receiver_id', NEW.receiver_id,
+        'receiver_name', sender_name
+      )
+    );
+  END IF;
+  
+  RETURN NEW;
+END;
+$$;
+
+-- Function: Mark Notification as Read
+CREATE OR REPLACE FUNCTION mark_notification_read(notification_id UUID)
+RETURNS VOID
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE public.notifications
+  SET is_read = true
+  WHERE id = notification_id AND user_id = auth.uid();
+END;
+$$;
+
+-- Function: Get Unread Notifications Count
+CREATE OR REPLACE FUNCTION get_unread_notifications_count()
+RETURNS INTEGER
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  count_val INTEGER;
+BEGIN
+  SELECT COUNT(*)::INTEGER INTO count_val
+  FROM public.notifications
+  WHERE user_id = auth.uid() AND is_read = false;
+  
+  RETURN count_val;
+END;
+$$;
+
 -- ============================================
 -- STEP 8: CREATE TRIGGERS
 -- ============================================
@@ -333,6 +452,20 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
+
+-- Trigger: Create connection request notification
+DROP TRIGGER IF EXISTS on_connection_request_created ON public.connection_requests;
+CREATE TRIGGER on_connection_request_created
+  AFTER INSERT ON public.connection_requests
+  FOR EACH ROW
+  EXECUTE FUNCTION create_connection_request_notification();
+
+-- Trigger: Create connection accepted notification
+DROP TRIGGER IF EXISTS on_connection_request_updated ON public.connection_requests;
+CREATE TRIGGER on_connection_request_updated
+  AFTER UPDATE ON public.connection_requests
+  FOR EACH ROW
+  EXECUTE FUNCTION create_connection_request_notification();
 
 -- Trigger: Create connection on accept
 DROP TRIGGER IF EXISTS on_connection_request_accept ON public.connection_requests;
@@ -375,8 +508,12 @@ GRANT INSERT ON public.connections TO authenticated;
 
 GRANT SELECT, INSERT, UPDATE ON public.messages TO authenticated;
 
+GRANT SELECT, INSERT, UPDATE ON public.notifications TO authenticated;
+
 -- Grant function execution
 GRANT EXECUTE ON FUNCTION find_nearby_users(DOUBLE PRECISION, DOUBLE PRECISION, DOUBLE PRECISION) TO authenticated;
+GRANT EXECUTE ON FUNCTION mark_notification_read(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION get_unread_notifications_count() TO authenticated;
 
 -- ============================================
 -- SETUP COMPLETE!

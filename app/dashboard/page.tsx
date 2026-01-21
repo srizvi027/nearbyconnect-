@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 // Dynamically import map component (client-side only)
 const MapView = dynamic(() => import('@/components/MapView'), { ssr: false });
 const ChatWindow = dynamic(() => import('@/components/ChatWindow'), { ssr: false });
+const NotificationBell = dynamic(() => import('@/components/NotificationBell'), { ssr: false });
 
 type User = {
   id: string;
@@ -29,6 +30,8 @@ export default function Dashboard() {
   const [nearbyCount, setNearbyCount] = useState(0);
   const [showMyProfile, setShowMyProfile] = useState(false);
   const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied' | 'error'>('loading');
+  const [showConnectionModal, setShowConnectionModal] = useState(false);
+  const [pendingRequest, setPendingRequest] = useState<{id: string, senderName: string} | null>(null);
 
   useEffect(() => {
     checkUser();
@@ -440,15 +443,49 @@ export default function Dashboard() {
 
       if (error) throw error;
       
-      alert('Connection request sent!');
+      alert('Connection request sent! The user will be notified.');
       setSelectedUser(null);
     } catch (error: any) {
       if (error.code === '23505') {
         alert('Connection request already sent!');
       } else {
         console.error('Error sending request:', error);
+        alert('Failed to send connection request. Please try again.');
       }
     }
+  };
+
+  const handleConnectionNotification = (requestId: string, senderName: string) => {
+    setPendingRequest({ id: requestId, senderName });
+    setShowConnectionModal(true);
+  };
+
+  const handleConnectionResponse = async (requestId: string, response: 'accepted' | 'rejected') => {
+    try {
+      const { error } = await supabase
+        .from('connection_requests')
+        .update({ status: response })
+        .eq('id', requestId);
+
+      if (error) {
+        console.error('Error responding to connection request:', error);
+        alert('Failed to respond to request. Please try again.');
+      } else {
+        if (response === 'accepted') {
+          alert('Connection request accepted! You can now chat.');
+          // Refresh connections
+          fetchConnections();
+        } else {
+          alert('Connection request declined.');
+        }
+      }
+    } catch (error) {
+      console.error('Error responding to connection request:', error);
+      alert('Failed to respond to request. Please try again.');
+    }
+
+    setShowConnectionModal(false);
+    setPendingRequest(null);
   };
 
   const openChat = (connection: Connection) => {
@@ -482,6 +519,7 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <NotificationBell onConnectionRequest={handleConnectionNotification} />
             <button
               onClick={() => router.push('/profile-setup')}
               className="p-2 text-gray-600 hover:text-[#093FB4] rounded-lg"
@@ -891,6 +929,40 @@ export default function Dashboard() {
           currentUserId={user?.id || ''}
           onClose={() => setShowChatWindow(false)}
         />
+      )}
+
+      {/* Connection Request Modal */}
+      {showConnectionModal && pendingRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-md w-full mx-4 p-6">
+            <div className="text-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Connection Request</h2>
+              <p className="text-gray-600">
+                <span className="font-medium">{pendingRequest.senderName}</span> wants to connect with you
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleConnectionResponse(pendingRequest.id, 'rejected')}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              >
+                Decline
+              </button>
+              <button
+                onClick={() => handleConnectionResponse(pendingRequest.id, 'accepted')}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all"
+              >
+                Accept
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
