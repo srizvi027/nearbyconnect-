@@ -63,8 +63,11 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
   };
 
   const subscribeToMessages = () => {
+    console.log('🔔 Setting up real-time subscription for connection:', connection.id);
+    
     // Clean up previous subscription if it exists
     if (channelRef.current) {
+      console.log('🧹 Cleaning up previous subscription');
       supabase.removeChannel(channelRef.current);
     }
 
@@ -82,11 +85,19 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
           console.log('💬 New message received:', payload);
           const newMsg = payload.new as Message;
           setMessages((prev) => {
-            // Avoid duplicates
-            if (prev.find(msg => msg.id === newMsg.id)) {
-              return prev;
+            // Remove any temporary messages with the same content and sender
+            const filteredPrev = prev.filter(msg => 
+              !(msg.id.startsWith('temp-') && 
+                msg.content === newMsg.content && 
+                msg.sender_id === newMsg.sender_id)
+            );
+            
+            // Avoid duplicates with real messages
+            if (filteredPrev.find(msg => msg.id === newMsg.id)) {
+              return filteredPrev;
             }
-            return [...prev, newMsg];
+            
+            return [...filteredPrev, newMsg];
           });
           
           if (newMsg.sender_id !== currentUserId) {
@@ -97,9 +108,12 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
           setTimeout(scrollToBottom, 100);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Subscription status:', status);
+      });
 
     channelRef.current = channel;
+    console.log('✅ Real-time subscription established for connection:', connection.id);
 
     return () => {
       if (channelRef.current) {
@@ -125,18 +139,61 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
   const sendMessage = async () => {
     if (!newMessage.trim() || loading) return;
 
+    const messageContent = newMessage.trim();
+    console.log('📤 Sending message:', messageContent);
+    setNewMessage('');
     setLoading(true);
+
     try {
-      const { error } = await supabase
+      // Create the message object for immediate UI update
+      const tempMessage = {
+        id: `temp-${Date.now()}`, // Temporary ID
+        content: messageContent,
+        sender_id: currentUserId,
+        connection_id: connection.id,
+        is_read: false,
+        created_at: new Date().toISOString()
+      };
+
+      // Add message to local state immediately for better UX
+      setMessages(prev => [...prev, tempMessage]);
+
+      // Send to database
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           connection_id: connection.id,
           sender_id: currentUserId,
-          content: newMessage.trim()
-        });
+          content: messageContent
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        // Remove the temporary message on error
+        setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
+        setNewMessage(messageContent); // Restore message content
+        throw error;
+      }
+
+      // Replace temporary message with real one if received
+      if (data) {
+        setMessages(prev => prev.map(msg => 
+          msg.id === tempMessage.id ? data : msg
+        ));
+      }
+
+      // Clear the input
       setNewMessage('');
+        throw error;
+      } else {
+        // Replace temporary message with real message from database
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === tempMessage.id ? data : msg
+          )
+        );
+      }
     } catch (error: unknown) {
       console.error('Error sending message:', error);
     } finally {
