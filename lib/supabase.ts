@@ -36,14 +36,20 @@ export type UserProfile = {
 export type Profile = UserProfile
 
 export type NearbyUser = {
-  user_id: string;
+  id: string; // Updated to match DB function
   username: string;
   full_name: string;
   avatar_url?: string;
   bio?: string;
-  latitude: number;
-  longitude: number;
-  distance_meters: number;
+  interests?: string[];
+  distance_km: number; // Updated to match DB function
+  last_seen: string;
+  // Support both coordinate formats
+  latitude?: number;
+  longitude?: number;
+  lat?: number;
+  lng?: number;
+  distance_meters?: number; // For backward compatibility
 }
 
 export type Connection = {

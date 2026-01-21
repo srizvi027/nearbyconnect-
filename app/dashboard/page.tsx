@@ -96,6 +96,35 @@ export default function Dashboard() {
             // Update location in database
             const { data: userData } = await supabase.auth.getUser();
             if (userData.user) {
+              console.log('Updating location for user:', userData.user.id);
+              
+              // First, ensure the user profile exists
+              const { data: existingProfile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('id', userData.user.id)
+                .single();
+              
+              if (!existingProfile) {
+                console.log('Profile not found, creating profile first...');
+                // Create profile if it doesn't exist
+                const { error: profileCreateError } = await supabase
+                  .from('profiles')
+                  .insert({
+                    id: userData.user.id,
+                    username: userData.user.email?.split('@')[0] || `user_${userData.user.id.substring(0, 8)}`,
+                    full_name: userData.user.user_metadata?.full_name || userData.user.email?.split('@')[0] || 'User',
+                    is_available: true
+                  });
+                
+                if (profileCreateError) {
+                  console.error('Error creating profile:', profileCreateError);
+                  return;
+                } else {
+                  console.log('Profile created successfully');
+                }
+              }
+              
               const { data, error } = await supabase.from('user_locations').upsert({
                 user_id: userData.user.id,
                 location: `POINT(${longitude} ${latitude})`,
@@ -160,6 +189,25 @@ export default function Dashboard() {
             try {
               const { data: userData } = await supabase.auth.getUser();
               if (userData.user) {
+                // Ensure profile exists before updating location
+                const { data: existingProfile } = await supabase
+                  .from('profiles')
+                  .select('id')
+                  .eq('id', userData.user.id)
+                  .single();
+                
+                if (!existingProfile) {
+                  console.log('Profile missing during periodic update, creating...');
+                  await supabase
+                    .from('profiles')
+                    .insert({
+                      id: userData.user.id,
+                      username: userData.user.email?.split('@')[0] || `user_${userData.user.id.substring(0, 8)}`,
+                      full_name: userData.user.user_metadata?.full_name || userData.user.email?.split('@')[0] || 'User',
+                      is_available: true
+                    });
+                }
+                
                 // Update location
                 const { error: locationError } = await supabase.from('user_locations').upsert({
                   user_id: userData.user.id,
@@ -808,7 +856,7 @@ export default function Dashboard() {
               </h3>
               <p className="text-gray-600 mb-2 text-sm sm:text-base">@{selectedUser.username}</p>
               <p className="text-xs sm:text-sm text-[#ED3500] font-medium mb-4">
-                📍 {(selectedUser.distance_meters / 1000).toFixed(2)} km away
+                📍 {((selectedUser.distance_meters || selectedUser.distance_km * 1000) / 1000).toFixed(2)} km away
               </p>
               
               {selectedUser.bio && (
@@ -825,7 +873,7 @@ export default function Dashboard() {
                   Close
                 </button>
                 <button
-                  onClick={() => handleSendConnectionRequest(selectedUser.user_id)}
+                  onClick={() => handleSendConnectionRequest(selectedUser.id)}
                   className="flex-1 px-4 py-3 sm:px-6 sm:py-3 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-xl font-semibold transition-all transform hover:scale-105 text-sm sm:text-base"
                 >
                   Connect Now

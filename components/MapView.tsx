@@ -167,7 +167,18 @@ export default function MapView({ userLocation, nearbyUsers, currentUser, onUser
 
     // Add markers for nearby users
     nearbyUsers.forEach((user) => {
-      const distance = user.distance_meters / 1000;
+      // Validate coordinates before creating marker
+      const lat = user.latitude || user.lat;
+      const lng = user.longitude || user.lng;
+      
+      if (typeof lat !== 'number' || typeof lng !== 'number' || 
+          isNaN(lat) || isNaN(lng) || 
+          (lat === 0 && lng === 0)) {
+        console.warn('Invalid coordinates for user, skipping marker:', user.username, { lat, lng });
+        return;
+      }
+      
+      const distance = (user.distance_meters || user.distance_km * 1000) / 1000;
       const isVeryClose = distance < 0.5;
       
       const avatarContent = user.avatar_url
@@ -241,7 +252,7 @@ export default function MapView({ userLocation, nearbyUsers, currentUser, onUser
         iconAnchor: [22.5, 22.5]
       });
 
-      const marker = L.marker([user.latitude, user.longitude], { icon: userIcon })
+      const marker = L.marker([lat, lng], { icon: userIcon })
         .addTo(mapRef.current!)
         .bindPopup(`
           <div style="text-align: center;">
