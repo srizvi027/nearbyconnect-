@@ -182,18 +182,6 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
           msg.id === tempMessage.id ? data : msg
         ));
       }
-
-      // Clear the input
-      setNewMessage('');
-        throw error;
-      } else {
-        // Replace temporary message with real message from database
-        setMessages(prev => 
-          prev.map(msg => 
-            msg.id === tempMessage.id ? data : msg
-          )
-        );
-      }
     } catch (error: unknown) {
       console.error('Error sending message:', error);
     } finally {
