@@ -269,29 +269,29 @@ export default function Dashboard() {
     <div className="h-screen flex flex-col bg-[#FFFCFB]">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-xl flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+        <div className="px-3 sm:px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-xl flex items-center justify-center">
+              <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-gray-800">NearbyConnect</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-800">NearbyConnect</h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => router.push('/profile-setup')}
-              className="text-gray-600 hover:text-[#093FB4]"
+              className="p-2 text-gray-600 hover:text-[#093FB4] rounded-lg"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 bg-[#ED3500] hover:bg-red-600 text-white rounded-lg transition-colors text-sm"
+              className="px-3 py-2 sm:px-4 sm:py-2 bg-[#ED3500] hover:bg-red-600 text-white rounded-lg transition-colors text-xs sm:text-sm"
             >
               Logout
             </button>
@@ -300,16 +300,16 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Left Sidebar - Welcome & Map */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Welcome Card */}
-          <div className="bg-white m-4 rounded-xl shadow-md p-4 flex items-center gap-4 flex-shrink-0">
+          <div className="bg-white m-3 sm:m-4 rounded-xl shadow-md p-3 sm:p-4 flex items-center gap-3 sm:gap-4 flex-shrink-0">
             {profile?.avatar_url ? (
               <img
                 src={profile.avatar_url}
                 alt={profile.full_name}
-                className="w-16 h-16 rounded-2xl object-cover flex-shrink-0 border-2 border-[#093FB4]"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl object-cover flex-shrink-0 border-2 border-[#093FB4]"
                 onError={(e) => {
                   // Fallback if image fails to load
                   const target = e.target as HTMLImageElement;
@@ -318,32 +318,33 @@ export default function Dashboard() {
                 }}
               />
             ) : null}
-            <div className={`w-16 h-16 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-2xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 ${profile?.avatar_url ? 'hidden' : ''}`}>
+            <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold flex-shrink-0 ${profile?.avatar_url ? 'hidden' : ''}`}>
               {profile?.full_name?.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-800">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 truncate">
                 Welcome back, {profile?.full_name?.split(' ')[0]}!
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600">
                 {profile?.is_available 
                   ? "You're currently visible" 
                   : "You're invisible"}
               </p>
               <button
                 onClick={() => router.push('/profile-setup')}
-                className="text-[#093FB4] hover:text-[#ED3500] text-sm font-medium mt-1 flex items-center gap-1"
+                className="text-[#093FB4] hover:text-[#ED3500] text-xs sm:text-sm font-medium mt-1 flex items-center gap-1"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-                Edit Profile
+                <span className="hidden sm:inline">Edit Profile</span>
+                <span className="sm:hidden">Edit</span>
               </button>
             </div>
           </div>
 
           {/* Map */}
-          <div className="flex-1 m-4 mt-0 rounded-xl overflow-hidden shadow-lg relative">
+          <div className="flex-1 mx-3 sm:mx-4 mb-3 sm:mb-4 rounded-xl overflow-hidden shadow-lg relative min-h-[300px] sm:min-h-[400px]">
             {userLocation && (
               <MapView
                 userLocation={userLocation}
@@ -355,35 +356,39 @@ export default function Dashboard() {
             )}
             
             {/* Nearby counter */}
-            <div className="absolute bottom-4 left-4 bg-[#ED3500] text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 z-[1000]">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 bg-[#ED3500] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-full shadow-lg flex items-center gap-2 z-[1000]">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
               </svg>
-              <span className="font-bold">People nearby: {nearbyCount}</span>
+              <span className="font-bold text-xs sm:text-sm">
+                <span className="hidden sm:inline">People nearby: </span>
+                <span className="sm:hidden">Nearby: </span>
+                {nearbyCount}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Right Sidebar - Connections & Chats */}
-        <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
-          <div className="p-4 border-b border-gray-200">
-            <h3 className="font-bold text-gray-800 mb-3">My Connections</h3>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+        <div className="w-full lg:w-80 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 flex flex-col max-h-[40vh] lg:max-h-none">
+          <div className="p-3 sm:p-4 border-b border-gray-200 flex-shrink-0">
+            <h3 className="font-bold text-gray-800 mb-3 text-sm sm:text-base">My Connections</h3>
+            <div className="space-y-2 max-h-32 sm:max-h-48 lg:max-h-64 overflow-y-auto">
               {connections.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">
+                <p className="text-xs sm:text-sm text-gray-500 text-center py-4">
                   No connections yet
                 </p>
               ) : (
                 connections.map((conn) => (
                   <div
                     key={conn.id}
-                    className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+                    className="flex items-center gap-2 sm:gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
                   >
                     {conn.profile?.avatar_url ? (
                       <img
                         src={conn.profile.avatar_url}
                         alt={conn.profile.full_name}
-                        className="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-[#093FB4]"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0 border-2 border-[#093FB4]"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
@@ -391,11 +396,11 @@ export default function Dashboard() {
                         }}
                       />
                     ) : null}
-                    <div className={`w-10 h-10 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 ${conn.profile?.avatar_url ? 'hidden' : ''}`}>
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-xs sm:text-sm ${conn.profile?.avatar_url ? 'hidden' : ''}`}>
                       {conn.profile?.full_name?.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-gray-800 truncate">
+                      <p className="font-medium text-xs sm:text-sm text-gray-800 truncate">
                         {conn.profile?.full_name}
                       </p>
                       <p className="text-xs text-gray-500">
@@ -404,12 +409,12 @@ export default function Dashboard() {
                     </div>
                     <button
                       onClick={() => openChat(conn)}
-                      className="px-3 py-1 bg-[#093FB4] hover:bg-[#0652e8] text-white rounded-full text-xs font-medium flex-shrink-0"
+                      className="px-2 py-1 sm:px-3 sm:py-1 bg-[#093FB4] hover:bg-[#0652e8] text-white rounded-full text-xs font-medium flex-shrink-0"
                     >
                       Chat
                     </button>
                     {conn.unread_count! > 0 && (
-                      <span className="bg-[#ED3500] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      <span className="bg-[#ED3500] text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
                         {conn.unread_count}
                       </span>
                     )}
@@ -419,15 +424,16 @@ export default function Dashboard() {
             </div>
             <button
               onClick={() => setShowFullChat(true)}
-              className="w-full mt-3 px-4 py-2 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-lg text-sm font-medium"
+              className="w-full mt-3 px-3 py-2 sm:px-4 sm:py-2 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-lg text-xs sm:text-sm font-medium"
             >
-              View all connections
+              <span className="hidden sm:inline">View all connections</span>
+              <span className="sm:hidden">View all</span>
             </button>
           </div>
 
-          <div className="p-4 flex-1 overflow-y-auto">
-            <h3 className="font-bold text-gray-800 mb-3">Recent Chats</h3>
-            <p className="text-sm text-gray-500 text-center py-4">
+          <div className="p-3 sm:p-4 flex-1 overflow-y-auto">
+            <h3 className="font-bold text-gray-800 mb-3 text-sm sm:text-base">Recent Chats</h3>
+            <p className="text-xs sm:text-sm text-gray-500 text-center py-4">
               No recent chats
             </p>
           </div>
@@ -436,27 +442,27 @@ export default function Dashboard() {
 
       {/* My Profile Modal */}
       {showMyProfile && profile && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[2000] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[2000] p-3 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-sm sm:max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="text-center">
               <div className="relative inline-block mb-4">
                 {profile.avatar_url ? (
                   <img
                     src={profile.avatar_url}
                     alt={profile.full_name}
-                    className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-[#093FB4]"
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover mx-auto border-4 border-[#093FB4]"
                   />
                 ) : (
-                  <div className="w-24 h-24 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-full flex items-center justify-center text-white text-2xl sm:text-3xl font-bold mx-auto">
                     {profile.full_name.charAt(0).toUpperCase()}
                   </div>
                 )}
                 {/* Online indicator */}
-                <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
+                <div className="absolute bottom-0 right-0 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 border-4 border-white rounded-full"></div>
               </div>
               
               <div className="flex items-center justify-center gap-2 mb-1">
-                <h3 className="text-2xl font-bold text-gray-800">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
                   {profile.full_name}
                 </h3>
                 <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
@@ -464,22 +470,22 @@ export default function Dashboard() {
                 </span>
               </div>
               
-              <p className="text-gray-600 mb-4">@{profile.username}</p>
+              <p className="text-gray-600 mb-4 text-sm sm:text-base">@{profile.username}</p>
               
               {profile.bio && (
-                <div className="bg-[#FFD8D8]/30 rounded-lg p-4 mb-4 text-left">
-                  <p className="text-sm text-gray-700">{profile.bio}</p>
+                <div className="bg-[#FFD8D8]/30 rounded-lg p-3 sm:p-4 mb-4 text-left">
+                  <p className="text-xs sm:text-sm text-gray-700">{profile.bio}</p>
                 </div>
               )}
 
               {profile.interests && Array.isArray(profile.interests) && profile.interests.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Interests</h4>
-                  <div className="flex flex-wrap gap-2 justify-center">
+                  <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">Interests</h4>
+                  <div className="flex flex-wrap gap-1 sm:gap-2 justify-center">
                     {profile.interests?.map((interest, idx) => (
                       <span
                         key={idx}
-                        className="px-3 py-1 bg-[#093FB4] text-white text-xs rounded-full"
+                        className="px-2 py-1 sm:px-3 sm:py-1 bg-[#093FB4] text-white text-xs rounded-full"
                       >
                         {interest}
                       </span>
@@ -488,25 +494,25 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+              <div className="grid grid-cols-2 gap-2 mb-4 text-xs sm:text-sm">
                 {profile.city && (
                   <div className="bg-gray-50 p-2 rounded-lg">
                     <p className="text-gray-500">City</p>
-                    <p className="font-semibold text-gray-800">{profile.city}</p>
+                    <p className="font-semibold text-gray-800 truncate">{profile.city}</p>
                   </div>
                 )}
                 {profile.country && (
                   <div className="bg-gray-50 p-2 rounded-lg">
                     <p className="text-gray-500">Country</p>
-                    <p className="font-semibold text-gray-800">{profile.country}</p>
+                    <p className="font-semibold text-gray-800 truncate">{profile.country}</p>
                   </div>
                 )}
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => setShowMyProfile(false)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-colors"
+                  className="flex-1 px-4 py-3 sm:px-6 sm:py-3 border-2 border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-colors text-sm sm:text-base"
                 >
                   Close
                 </button>
@@ -515,7 +521,7 @@ export default function Dashboard() {
                     setShowMyProfile(false);
                     router.push('/profile-setup');
                   }}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-xl font-semibold transition-all transform hover:scale-105"
+                  className="flex-1 px-4 py-3 sm:px-6 sm:py-3 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-xl font-semibold transition-all transform hover:scale-105 text-sm sm:text-base"
                 >
                   Edit Profile
                 </button>
@@ -527,14 +533,14 @@ export default function Dashboard() {
 
       {/* User Profile Modal */}
       {selectedUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[2000] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[2000] p-3 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-sm sm:max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="text-center">
               {selectedUser.avatar_url ? (
                 <img
                   src={selectedUser.avatar_url}
                   alt={selectedUser.full_name}
-                  className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-[#093FB4]"
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover mx-auto mb-4 border-4 border-[#093FB4]"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
@@ -542,33 +548,33 @@ export default function Dashboard() {
                   }}
                 />
               ) : null}
-              <div className={`w-24 h-24 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-4 ${selectedUser.avatar_url ? 'hidden' : ''}`}>
+              <div className={`w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-full flex items-center justify-center text-white text-2xl sm:text-3xl font-bold mx-auto mb-4 ${selectedUser.avatar_url ? 'hidden' : ''}`}>
                 {selectedUser.full_name.charAt(0).toUpperCase()}
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-1">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">
                 {selectedUser.full_name}
               </h3>
-              <p className="text-gray-600 mb-2">@{selectedUser.username}</p>
-              <p className="text-sm text-[#ED3500] font-medium mb-4">
+              <p className="text-gray-600 mb-2 text-sm sm:text-base">@{selectedUser.username}</p>
+              <p className="text-xs sm:text-sm text-[#ED3500] font-medium mb-4">
                 📍 {(selectedUser.distance_meters / 1000).toFixed(2)} km away
               </p>
               
               {selectedUser.bio && (
-                <div className="bg-[#FFD8D8]/30 rounded-lg p-4 mb-6 text-left">
-                  <p className="text-sm text-gray-700">{selectedUser.bio}</p>
+                <div className="bg-[#FFD8D8]/30 rounded-lg p-3 sm:p-4 mb-6 text-left">
+                  <p className="text-xs sm:text-sm text-gray-700">{selectedUser.bio}</p>
                 </div>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => setSelectedUser(null)}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-colors"
+                  className="flex-1 px-4 py-3 sm:px-6 sm:py-3 border-2 border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-colors text-sm sm:text-base"
                 >
                   Close
                 </button>
                 <button
                   onClick={() => handleSendConnectionRequest(selectedUser.user_id)}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-xl font-semibold transition-all transform hover:scale-105"
+                  className="flex-1 px-4 py-3 sm:px-6 sm:py-3 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-xl font-semibold transition-all transform hover:scale-105 text-sm sm:text-base"
                 >
                   Connect Now
                 </button>

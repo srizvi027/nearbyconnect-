@@ -243,24 +243,24 @@ export default function ProfileSetup() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFFCFB] to-[#FFD8D8] py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFFCFB] to-[#FFD8D8] py-6 sm:py-12 px-3 sm:px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"/>
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Complete Your Profile</h1>
-          <p className="text-gray-600">Tell others about yourself</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Complete Your Profile</h1>
+          <p className="text-gray-600 text-sm sm:text-base">Tell others about yourself</p>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-col sm:flex-row gap-2 mb-6">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
+            className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all text-sm sm:text-base ${
               activeTab === 'profile'
                 ? 'bg-white shadow-md text-[#093FB4]'
                 : 'bg-white/50 text-gray-600 hover:bg-white/70'
@@ -270,7 +270,7 @@ export default function ProfileSetup() {
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
+            className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all text-sm sm:text-base ${
               activeTab === 'settings'
                 ? 'bg-white shadow-md text-[#093FB4]'
                 : 'bg-white/50 text-gray-600 hover:bg-white/70'
@@ -281,9 +281,9 @@ export default function ProfileSetup() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8">
           {activeTab === 'profile' ? (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Avatar Upload */}
               <div className="text-center">
                 <div className="relative inline-block">
@@ -291,15 +291,15 @@ export default function ProfileSetup() {
                     <img
                       src={avatarUrl}
                       alt="Avatar"
-                      className="w-32 h-32 rounded-full object-cover border-4 border-[#093FB4]"
+                      className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-[#093FB4]"
                     />
                   ) : (
-                    <div className="w-32 h-32 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-full flex items-center justify-center text-white text-4xl font-bold">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-full flex items-center justify-center text-white text-2xl sm:text-4xl font-bold">
                       {fullName.charAt(0).toUpperCase() || '?'}
                     </div>
                   )}
                   <label className="absolute bottom-0 right-0 bg-[#ED3500] text-white p-2 rounded-full cursor-pointer hover:bg-red-600 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -312,22 +312,22 @@ export default function ProfileSetup() {
                     />
                   </label>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-xs sm:text-sm text-gray-500 mt-2">
                   {uploading ? 'Uploading...' : 'Click to upload profile picture'}
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 {/* Full Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     Full Name *
                   </label>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors text-sm sm:text-base"
                     placeholder="John Doe"
                     disabled={loading}
                   />
@@ -335,14 +335,14 @@ export default function ProfileSetup() {
 
                 {/* Username */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     Username *
                   </label>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors text-sm sm:text-base"
                     placeholder="johndoe"
                     disabled={loading}
                   />
@@ -350,14 +350,14 @@ export default function ProfileSetup() {
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     Phone Number
                   </label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors text-sm sm:text-base"
                     placeholder="+1 234 567 8900"
                     disabled={loading}
                   />
@@ -365,14 +365,14 @@ export default function ProfileSetup() {
 
                 {/* Date of Birth */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     Date of Birth
                   </label>
                   <input
                     type="date"
                     value={dateOfBirth}
                     onChange={(e) => setDateOfBirth(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors text-sm sm:text-base"
                     disabled={loading}
                   />
                 </div>
@@ -380,15 +380,15 @@ export default function ProfileSetup() {
 
               {/* Bio */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   About You
                 </label>
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Tell people about yourself, your hobbies, what you're looking for..."
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors resize-none"
-                  rows={4}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors resize-none text-sm sm:text-base"
+                  rows={3}
                   maxLength={500}
                   disabled={loading}
                 />
@@ -397,30 +397,30 @@ export default function ProfileSetup() {
 
               {/* Address */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   Address
                 </label>
                 <input
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors text-sm sm:text-base"
                   placeholder="123 Main Street, Apt 4B"
                   disabled={loading}
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 {/* City */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     City
                   </label>
                   <input
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors text-sm sm:text-base"
                     placeholder="Karachi"
                     disabled={loading}
                   />
@@ -428,14 +428,14 @@ export default function ProfileSetup() {
 
                 {/* Country */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     Country
                   </label>
                   <input
                     type="text"
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none transition-colors text-sm sm:text-base"
                     placeholder="Pakistan"
                     disabled={loading}
                   />
@@ -444,16 +444,16 @@ export default function ProfileSetup() {
 
               {/* Interests */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   Interests (Max 10)
                 </label>
                 
                 {interests.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
                     {interests.map((interest, index) => (
                       <span
                         key={index}
-                        className="bg-[#093FB4] text-white px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                        className="bg-[#093FB4] text-white px-2.5 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2"
                       >
                         {interest}
                         <button
@@ -461,7 +461,7 @@ export default function ProfileSetup() {
                           className="hover:bg-white/20 rounded-full p-0.5"
                           disabled={loading}
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         </button>
@@ -470,7 +470,7 @@ export default function ProfileSetup() {
                   </div>
                 )}
 
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
                   {interestSuggestions
                     .filter(s => !interests.includes(s))
                     .slice(0, 8)
@@ -478,7 +478,7 @@ export default function ProfileSetup() {
                       <button
                         key={index}
                         onClick={() => addInterest(suggestion)}
-                        className="bg-gray-100 hover:bg-[#FFD8D8] text-gray-700 px-3 py-1 rounded-full text-sm transition-colors"
+                        className="bg-gray-100 hover:bg-[#FFD8D8] text-gray-700 px-2.5 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm transition-colors"
                         disabled={loading || interests.length >= 10}
                       >
                         {suggestion}
@@ -486,20 +486,20 @@ export default function ProfileSetup() {
                     ))}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={newInterest}
                     onChange={(e) => setNewInterest(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddCustomInterest()}
                     placeholder="Add custom interest..."
-                    className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#093FB4] focus:outline-none transition-colors text-sm"
+                    className="flex-1 px-3 sm:px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#093FB4] focus:outline-none transition-colors text-xs sm:text-sm"
                     disabled={loading || interests.length >= 10}
                     maxLength={30}
                   />
                   <button
                     onClick={handleAddCustomInterest}
-                    className="px-4 py-2 bg-[#093FB4] hover:bg-[#0652e8] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 sm:px-4 py-2 bg-[#093FB4] hover:bg-[#0652e8] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm whitespace-nowrap"
                     disabled={loading || !newInterest.trim() || interests.length >= 10}
                   >
                     Add
@@ -622,34 +622,35 @@ export default function ProfileSetup() {
 
           {/* Error/Success Messages */}
           {error && (
-            <div className="p-3 bg-[#FFD8D8] border border-[#ED3500] rounded-lg text-sm text-[#ED3500]">
+            <div className="p-3 bg-[#FFD8D8] border border-[#ED3500] rounded-lg text-xs sm:text-sm text-[#ED3500]">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="p-3 bg-green-50 border border-green-500 rounded-lg text-sm text-green-700">
+            <div className="p-3 bg-green-50 border border-green-500 rounded-lg text-xs sm:text-sm text-green-700">
               {success}
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mt-6">
+          <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-6">
             <button
               onClick={() => router.push('/dashboard')}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-colors"
+              className="flex-1 px-4 py-3 sm:px-6 sm:py-3 border-2 border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-colors text-sm sm:text-base order-2 sm:order-1"
               disabled={loading}
             >
-              Back to Dashboard
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
             </button>
             <button
               onClick={handleSubmit}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-xl font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="flex-1 px-4 py-3 sm:px-6 sm:py-3 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-xl font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base order-1 sm:order-2"
               disabled={loading}
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                   </svg>
