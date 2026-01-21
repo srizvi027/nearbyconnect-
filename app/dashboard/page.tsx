@@ -21,6 +21,12 @@ type Profile = {
   bio?: string;
   avatar_url?: string;
   is_available: boolean;
+  interests?: string[];
+  city?: string;
+  country?: string;
+  phone?: string;
+  address?: string;
+  theme?: string;
 };
 
 type NearbyUser = {
