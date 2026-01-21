@@ -944,7 +944,7 @@ export default function Dashboard() {
 
       {/* Connection Request Modal */}
       {showConnectionModal && pendingRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-md w-full mx-4 p-6 animate-in zoom-in-95 duration-200">
             <div className="text-center mb-6">
               <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mb-4 animate-pulse">

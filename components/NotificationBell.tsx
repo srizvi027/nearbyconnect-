@@ -223,7 +223,7 @@ export default function NotificationBell({ onConnectionRequest }: NotificationBe
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative z-[1000]" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -240,7 +240,7 @@ export default function NotificationBell({ onConnectionRequest }: NotificationBe
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999] max-h-96 overflow-y-auto">
           <div className="px-4 py-3 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
             {unreadCount > 0 && (
