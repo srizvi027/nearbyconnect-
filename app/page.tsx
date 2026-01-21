@@ -62,6 +62,7 @@ export default function Home() {
         });
 
         if (signInError) {
+          console.error('Sign in error:', signInError);
           throw signInError;
         }
 
@@ -85,6 +86,7 @@ export default function Home() {
         });
 
         if (signUpError) {
+          console.error('Sign up error:', signUpError);
           throw signUpError;
         }
 
