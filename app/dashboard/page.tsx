@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase, type Profile, type NearbyUser, type Connection } from '@/lib/supabase';
 import dynamic from 'next/dynamic';
 
 // Dynamically import map component (client-side only)
@@ -12,41 +12,6 @@ const ChatWindow = dynamic(() => import('@/components/ChatWindow'), { ssr: false
 type User = {
   id: string;
   email?: string;
-};
-
-type Profile = {
-  id: string;
-  username: string;
-  full_name: string;
-  bio?: string;
-  avatar_url?: string;
-  is_available: boolean;
-  interests?: string[];
-  city?: string;
-  country?: string;
-  phone?: string;
-  address?: string;
-  theme?: string;
-};
-
-type NearbyUser = {
-  user_id: string;
-  username: string;
-  full_name: string;
-  avatar_url?: string;
-  bio?: string;
-  latitude: number;
-  longitude: number;
-  distance_meters: number;
-};
-
-type Connection = {
-  id: string;
-  user_id_1: string;
-  user_id_2: string;
-  profile: Profile;
-  distance?: number;
-  unread_count?: number;
 };
 
 export default function Dashboard() {
@@ -508,21 +473,20 @@ export default function Dashboard() {
               )}
 
               {profile.interests && profile.interests.length > 0 && (
-  <div className="mb-4">
-    <h4 className="text-sm font-semibold text-gray-700 mb-2">Interests</h4>
-    <div className="flex flex-wrap gap-2 justify-center">
-      {profile.interests!.map((interest, idx) => (
-        <span
-          key={idx}
-          className="px-3 py-1 bg-[#093FB4] text-white text-xs rounded-full"
-        >
-          {interest}
-        </span>
-      ))}
-    </div>
-  </div>
-)}
-
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Interests</h4>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {profile.interests.map((interest, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 bg-[#093FB4] text-white text-xs rounded-full"
+                      >
+                        {interest}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
                 {profile.city && (

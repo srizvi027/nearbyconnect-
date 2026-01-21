@@ -1,24 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
-
-type Message = {
-  id: string;
-  sender_id: string;
-  content: string;
-  created_at: string;
-  is_read: boolean;
-};
-
-type Connection = {
-  id: string;
-  profile: {
-    id: string;
-    full_name: string;
-    username: string;
-  };
-};
+import { supabase, type Message, type Connection } from '@/lib/supabase';
 
 type ChatWindowProps = {
   connection: Connection;

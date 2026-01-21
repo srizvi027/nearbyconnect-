@@ -3,24 +3,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-
-type NearbyUser = {
-  user_id: string;
-  username: string;
-  full_name: string;
-  avatar_url?: string;
-  latitude: number;
-  longitude: number;
-  distance_meters: number;
-};
-
-type Profile = {
-  id: string;
-  username: string;
-  full_name: string;
-  avatar_url?: string;
-  bio?: string;
-};
+import { type Profile, type NearbyUser } from '@/lib/supabase';
 
 type MapViewProps = {
   userLocation: { lat: number; lng: number };
