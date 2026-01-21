@@ -115,6 +115,9 @@ export default function Dashboard() {
                 }).eq('id', userData.user.id);
                 
                 console.log('User marked as available');
+                
+                // Wait a moment then search for nearby users
+                setTimeout(fetchNearbyUsers, 2000);
               }
             }
           } catch (err) {
@@ -157,13 +160,34 @@ export default function Dashboard() {
             try {
               const { data: userData } = await supabase.auth.getUser();
               if (userData.user) {
-                await supabase.from('user_locations').upsert({
+                // Update location
+                const { error: locationError } = await supabase.from('user_locations').upsert({
                   user_id: userData.user.id,
                   location: `POINT(${longitude} ${latitude})`,
                   accuracy: position.coords.accuracy,
                   updated_at: new Date().toISOString()
                 });
-                console.log('Location updated at:', new Date().toISOString());
+                
+                if (locationError) {
+                  console.error('Location update error:', locationError);
+                } else {
+                  console.log('Location updated at:', new Date().toISOString());
+                  
+                  // Also ensure user is marked as available
+                  const { error: profileError } = await supabase
+                    .from('profiles')
+                    .update({ 
+                      is_available: true,
+                      updated_at: new Date().toISOString()
+                    })
+                    .eq('id', userData.user.id);
+                    
+                  if (profileError) {
+                    console.error('Profile availability update error:', profileError);
+                  } else {
+                    console.log('Profile marked as available');
+                  }
+                }
               }
             } catch (err) {
               console.error('Periodic location update error:', err);
@@ -192,6 +216,31 @@ export default function Dashboard() {
     console.log('Searching for nearby users at:', userLocation);
     
     try {
+      // First, let's check our own location data in the database
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        const { data: myLocation } = await supabase
+          .from('user_locations')
+          .select('*')
+          .eq('user_id', userData.user.id)
+          .single();
+        console.log('My location in database:', myLocation);
+
+        // Check how many total users have locations
+        const { data: allLocations, count: totalWithLocations } = await supabase
+          .from('user_locations')
+          .select('*', { count: 'exact' });
+        console.log(`Total users with locations: ${totalWithLocations}`, allLocations);
+
+        // Check available profiles
+        const { data: availableProfiles, count: availableCount } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, is_available')
+          .eq('is_available', true)
+          .neq('id', userData.user.id);
+        console.log(`Available profiles: ${availableCount}`, availableProfiles);
+      }
+      
       const { data, error } = await supabase.rpc('find_nearby_users', {
         user_lat: userLocation.lat,
         user_lng: userLocation.lng,
@@ -199,14 +248,45 @@ export default function Dashboard() {
       });
 
       if (error) {
-        console.error('Error fetching nearby users:', error);
+        console.error('RPC Error details:', error);
         setNearbyUsers([]);
         setNearbyCount(0);
+        
+        // Try a simpler query to test if RPC function exists
+        const { data: testRpc, error: testError } = await supabase
+          .rpc('find_nearby_users', {
+            user_lat: 0,
+            user_lng: 0,
+            radius_km: 1000
+          });
+        console.log('Test RPC call:', { testRpc, testError });
         return;
       }
 
       const users = data || [];
-      console.log(`Found ${users.length} nearby users:`, users);
+      console.log(`RPC returned ${users.length} nearby users:`, users);
+      
+      // Also try a manual query for comparison
+      const { data: manualQuery } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          username,
+          full_name,
+          avatar_url,
+          bio,
+          interests,
+          is_available,
+          user_locations (
+            location,
+            updated_at
+          )
+        `)
+        .eq('is_available', true)
+        .neq('id', userData?.user?.id || '');
+      
+      console.log('Manual query results:', manualQuery?.filter(p => p.user_locations.length > 0));
+      
       setNearbyUsers(users);
       setNearbyCount(users.length);
     } catch (error: unknown) {
@@ -452,7 +532,47 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-            
+                        {/* Debug Panel */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="bg-gray-900 text-white p-4 rounded-lg text-sm mb-4 space-y-2">
+                <h3 className="font-bold text-yellow-400">Debug Info</h3>
+                <div>
+                  <strong>Location Status:</strong> {locationStatus}
+                </div>
+                <div>
+                  <strong>User Location:</strong> {userLocation ? `${userLocation.lat.toFixed(6)}, ${userLocation.lng.toFixed(6)}` : 'None'}
+                </div>
+                <div>
+                  <strong>Nearby Users Count:</strong> {nearbyCount}
+                </div>
+                <div>
+                  <strong>Last Update:</strong> {new Date().toLocaleTimeString()}
+                </div>
+                <button
+                  onClick={async () => {
+                    const { data } = await supabase.auth.getUser();
+                    if (data.user) {
+                      const { data: myProfile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', data.user.id)
+                        .single();
+                      console.log('My Profile:', myProfile);
+                      
+                      const { data: myLocation } = await supabase
+                        .from('user_locations')
+                        .select('*')
+                        .eq('user_id', data.user.id)
+                        .single();
+                      console.log('My Location Record:', myLocation);
+                    }
+                  }}
+                  className="bg-blue-600 text-white px-2 py-1 rounded text-xs"
+                >
+                  Check My Data
+                </button>
+              </div>
+            )}
             {/* Location status indicator */}
             <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-[1000]">
               {locationStatus === 'granted' && (
