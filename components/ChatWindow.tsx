@@ -14,16 +14,26 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<any>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastMessageIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     fetchMessages();
     const cleanup = subscribeToMessages();
     markMessagesAsRead();
     
-    return cleanup;
+    return () => {
+      cleanup();
+      // Clear typing timeout on cleanup
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
   }, [connection.id]);
 
   useEffect(() => {
@@ -72,7 +82,8 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
     }
 
     const channel = supabase
-      .channel(`messages-${connection.id}-${Date.now()}`) // Unique channel name
+      .channel(`chat-${connection.id}-${currentUserId}`)
+      // Listen for new messages
       .on(
         'postgres_changes',
         {
@@ -84,6 +95,12 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
         (payload) => {
           console.log('💬 New message received:', payload);
           const newMsg = payload.new as Message;
+          
+          // Avoid processing our own messages if we already have them
+          if (lastMessageIdRef.current === newMsg.id) {
+            return;
+          }
+          
           setMessages((prev) => {
             // Remove any temporary messages with the same content and sender
             const filteredPrev = prev.filter(msg => 
@@ -97,17 +114,35 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
               return filteredPrev;
             }
             
-            return [...filteredPrev, newMsg];
+            return [...filteredPrev, newMsg].sort((a, b) => 
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            );
           });
           
           if (newMsg.sender_id !== currentUserId) {
             markMessagesAsRead();
+            // Clear typing indicator when message is received
+            setOtherUserTyping(false);
           }
           
           // Auto-scroll to bottom
           setTimeout(scrollToBottom, 100);
         }
       )
+      // Listen for typing indicators
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        console.log('⌨️ Typing event received:', payload);
+        if (payload.payload.user_id !== currentUserId) {
+          setOtherUserTyping(payload.payload.typing);
+          
+          // Auto-clear typing indicator after 3 seconds
+          if (payload.payload.typing) {
+            setTimeout(() => {
+              setOtherUserTyping(false);
+            }, 3000);
+          }
+        }
+      })
       .subscribe((status) => {
         console.log('📡 Subscription status:', status);
       });
@@ -141,6 +176,10 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
 
     const messageContent = newMessage.trim();
     console.log('📤 Sending message:', messageContent);
+    
+    // Stop typing indicator
+    sendTypingIndicator(false);
+    
     setNewMessage('');
     setLoading(true);
 
@@ -178,6 +217,7 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
 
       // Replace temporary message with real one if received
       if (data) {
+        lastMessageIdRef.current = data.id;
         setMessages(prev => prev.map(msg => 
           msg.id === tempMessage.id ? data : msg
         ));
@@ -191,6 +231,46 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const sendTypingIndicator = (typing: boolean) => {
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: {
+          user_id: currentUserId,
+          typing: typing
+        }
+      });
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewMessage(value);
+    
+    // Send typing indicator
+    if (value.trim() && !isTyping) {
+      setIsTyping(true);
+      sendTypingIndicator(true);
+    } else if (!value.trim() && isTyping) {
+      setIsTyping(false);
+      sendTypingIndicator(false);
+    }
+    
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Set timeout to stop typing indicator
+    typingTimeoutRef.current = setTimeout(() => {
+      if (isTyping) {
+        setIsTyping(false);
+        sendTypingIndicator(false);
+      }
+    }, 2000);
   };
 
   const popularEmojis = [
@@ -294,6 +374,23 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
             );
           })
         )}
+        
+        {/* Typing Indicator */}
+        {otherUserTyping && (
+          <div className="flex justify-start">
+            <div className="bg-white text-gray-800 border border-gray-200 rounded-2xl px-4 py-2">
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-gray-600">{connection.profile.full_name} is typing</span>
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
@@ -335,13 +432,13 @@ export default function ChatWindow({ connection, currentUserId, onClose }: ChatW
           >
             <span className="text-xl">😀</span>
           </button>
-          <textarea
+          <input
+            type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyPress}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none resize-none"
-            rows={1}
+            className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-[#093FB4] focus:outline-none"
             disabled={loading}
           />
           <button
