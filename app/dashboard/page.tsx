@@ -508,20 +508,21 @@ export default function Dashboard() {
               )}
 
               {profile.interests && profile.interests.length > 0 && (
-                <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Interests</h4>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {profile.interests.map((interest, idx) => (
-                      <span
-                        key={idx}
-                        className="px-3 py-1 bg-[#093FB4] text-white text-xs rounded-full"
-                      >
-                        {interest}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+  <div className="mb-4">
+    <h4 className="text-sm font-semibold text-gray-700 mb-2">Interests</h4>
+    <div className="flex flex-wrap gap-2 justify-center">
+      {profile.interests!.map((interest, idx) => (
+        <span
+          key={idx}
+          className="px-3 py-1 bg-[#093FB4] text-white text-xs rounded-full"
+        >
+          {interest}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
+
 
               <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
                 {profile.city && (
