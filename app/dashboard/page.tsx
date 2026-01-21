@@ -333,7 +333,7 @@ export default function Dashboard() {
         .eq('is_available', true)
         .neq('id', userData?.user?.id || '');
       
-      console.log('Manual query results:', manualQuery?.filter(p => p.user_locations.length > 0));
+      console.log('Manual query results:', manualQuery?.filter(p => p.user_locations && p.user_locations.length > 0) || []);
       
       setNearbyUsers(users);
       setNearbyCount(users.length);
