@@ -472,11 +472,11 @@ export default function Dashboard() {
                 </div>
               )}
 
-              {profile.interests && profile.interests.length > 0 && (
+              {profile.interests && Array.isArray(profile.interests) && profile.interests.length > 0 && (
                 <div className="mb-4">
                   <h4 className="text-sm font-semibold text-gray-700 mb-2">Interests</h4>
                   <div className="flex flex-wrap gap-2 justify-center">
-                    {profile.interests.map((interest, idx) => (
+                    {profile.interests?.map((interest, idx) => (
                       <span
                         key={idx}
                         className="px-3 py-1 bg-[#093FB4] text-white text-xs rounded-full"
