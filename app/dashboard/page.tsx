@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [showFullChat, setShowFullChat] = useState(false);
   const [nearbyCount, setNearbyCount] = useState(0);
   const [showMyProfile, setShowMyProfile] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied' | 'error'>('loading');
 
   useEffect(() => {
     checkUser();
@@ -81,43 +82,115 @@ export default function Dashboard() {
 
   const startLocationTracking = () => {
     if ('geolocation' in navigator) {
+      console.log('Starting location tracking...');
+      setLocationStatus('loading');
+      
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
+          console.log('Location obtained:', { latitude, longitude, accuracy: position.coords.accuracy });
           setUserLocation({ lat: latitude, lng: longitude });
+          setLocationStatus('granted');
           
-          // Update location in database
-          await supabase.from('user_locations').upsert({
-            user_id: (await supabase.auth.getUser()).data.user?.id,
-            location: `POINT(${longitude} ${latitude})`,
-            accuracy: position.coords.accuracy,
-            updated_at: new Date().toISOString()
-          });
+          try {
+            // Update location in database
+            const { data: userData } = await supabase.auth.getUser();
+            if (userData.user) {
+              const { data, error } = await supabase.from('user_locations').upsert({
+                user_id: userData.user.id,
+                location: `POINT(${longitude} ${latitude})`,
+                accuracy: position.coords.accuracy,
+                updated_at: new Date().toISOString()
+              });
+              
+              if (error) {
+                console.error('Error saving location:', error);
+              } else {
+                console.log('Location saved successfully:', data);
+                
+                // Also ensure user profile is marked as available
+                await supabase.from('profiles').update({
+                  is_available: true,
+                  updated_at: new Date().toISOString()
+                }).eq('id', userData.user.id);
+                
+                console.log('User marked as available');
+              }
+            }
+          } catch (err) {
+            console.error('Location update error:', err);
+          }
         },
-        (error: unknown) => console.error('Location error:', error),
-        { enableHighAccuracy: true }
+        (error: GeolocationPositionError) => {
+          console.error('Location error:', error.message, 'Code:', error.code);
+          
+          // Show user-friendly error messages
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              setLocationStatus('denied');
+              alert('Location access denied. Please enable location services to see nearby users.');
+              break;
+            case error.POSITION_UNAVAILABLE:
+              setLocationStatus('error');
+              alert('Location information is unavailable.');
+              break;
+            case error.TIMEOUT:
+              setLocationStatus('error');
+              alert('Location request timed out.');
+              break;
+          }
+        },
+        { 
+          enableHighAccuracy: true, 
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        }
       );
 
       // Update location every 60 seconds
-      setInterval(() => {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ lat: latitude, lng: longitude });
-          
-          await supabase.from('user_locations').upsert({
-            user_id: (await supabase.auth.getUser()).data.user?.id,
-            location: `POINT(${longitude} ${latitude})`,
-            accuracy: position.coords.accuracy,
-            updated_at: new Date().toISOString()
-          });
-        });
+      const locationInterval = setInterval(() => {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({ lat: latitude, lng: longitude });
+            
+            try {
+              const { data: userData } = await supabase.auth.getUser();
+              if (userData.user) {
+                await supabase.from('user_locations').upsert({
+                  user_id: userData.user.id,
+                  location: `POINT(${longitude} ${latitude})`,
+                  accuracy: position.coords.accuracy,
+                  updated_at: new Date().toISOString()
+                });
+                console.log('Location updated at:', new Date().toISOString());
+              }
+            } catch (err) {
+              console.error('Periodic location update error:', err);
+            }
+          },
+          (error) => console.error('Periodic location error:', error),
+          { enableHighAccuracy: false, timeout: 5000 }
+        );
       }, 60000);
+
+      // Store interval ID to clear it later if needed
+      return () => clearInterval(locationInterval);
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+      setLocationStatus('error');
+      alert('Geolocation is not supported by your browser.');
     }
   };
 
   const fetchNearbyUsers = async () => {
-    if (!userLocation) return;
+    if (!userLocation) {
+      console.log('No user location available for nearby search');
+      return;
+    }
 
+    console.log('Searching for nearby users at:', userLocation);
+    
     try {
       const { data, error } = await supabase.rpc('find_nearby_users', {
         user_lat: userLocation.lat,
@@ -133,6 +206,7 @@ export default function Dashboard() {
       }
 
       const users = data || [];
+      console.log(`Found ${users.length} nearby users:`, users);
       setNearbyUsers(users);
       setNearbyCount(users.length);
     } catch (error: unknown) {
@@ -355,16 +429,74 @@ export default function Dashboard() {
               />
             )}
             
-            {/* Nearby counter */}
-            <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 bg-[#ED3500] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-full shadow-lg flex items-center gap-2 z-[1000]">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-              </svg>
-              <span className="font-bold text-xs sm:text-sm">
-                <span className="hidden sm:inline">People nearby: </span>
-                <span className="sm:hidden">Nearby: </span>
-                {nearbyCount}
-              </span>
+            {/* No location message */}
+            {!userLocation && (
+              <div className="flex items-center justify-center h-full bg-gray-100">
+                <div className="text-center p-6">
+                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Location Access Required</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    {locationStatus === 'denied' && 'Location access was denied. Please enable location services in your browser.'}
+                    {locationStatus === 'loading' && 'Requesting location access...'}
+                    {locationStatus === 'error' && 'Unable to get your location. Please try again.'}
+                  </p>
+                  <button
+                    onClick={startLocationTracking}
+                    className="px-4 py-2 bg-[#093FB4] text-white rounded-lg hover:bg-[#0652e8] transition-colors text-sm"
+                  >
+                    Enable Location
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Location status indicator */}
+            <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-[1000]">
+              {locationStatus === 'granted' && (
+                <div className="bg-green-500 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  Live
+                </div>
+              )}
+              {locationStatus === 'denied' && (
+                <div className="bg-red-500 text-white px-2 py-1 rounded-full text-xs">
+                  Location Denied
+                </div>
+              )}
+              {locationStatus === 'loading' && (
+                <div className="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs">
+                  Getting Location...
+                </div>
+              )}
+            </div>
+            
+            {/* Nearby counter and refresh button */}
+            <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 flex items-center gap-2 z-[1000]">
+              <div className="bg-[#ED3500] text-white px-3 py-2 sm:px-4 sm:py-2 rounded-full shadow-lg flex items-center gap-2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+                <span className="font-bold text-xs sm:text-sm">
+                  <span className="hidden sm:inline">People nearby: </span>
+                  <span className="sm:hidden">Nearby: </span>
+                  {nearbyCount}
+                </span>
+              </div>
+              
+              {userLocation && (
+                <button
+                  onClick={fetchNearbyUsers}
+                  className="bg-[#093FB4] text-white p-2 rounded-full shadow-lg hover:bg-[#0652e8] transition-colors"
+                  title="Refresh nearby users"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
         </div>
