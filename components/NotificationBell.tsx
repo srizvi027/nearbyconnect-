@@ -64,39 +64,71 @@ export default function NotificationBell({ onConnectionRequest }: NotificationBe
   };
 
   const setupRealtimeSubscription = () => {
-    const channel = supabase
-      .channel('notifications')
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'notifications' },
-        (payload) => {
-          console.log('New notification:', payload);
-          const newNotification = payload.new as Notification;
-          setNotifications(prev => [newNotification, ...prev]);
-          setUnreadCount(prev => prev + 1);
-          
-          // Play notification sound (optional)
-          playNotificationSound();
-        }
-      )
-      .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'notifications' },
-        (payload) => {
-          const updatedNotification = payload.new as Notification;
-          setNotifications(prev => 
-            prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
-          );
-          
-          // Update unread count
-          if (updatedNotification.is_read) {
-            setUnreadCount(prev => Math.max(0, prev - 1));
+    // Get current user ID for filtering
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      
+      const userId = data.user.id;
+      
+      const channel = supabase
+        .channel('user-notifications')
+        .on('postgres_changes', 
+          { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`
+          },
+          (payload) => {
+            console.log('🔔 New notification received:', payload);
+            const newNotification = payload.new as Notification;
+            setNotifications(prev => [newNotification, ...prev]);
+            setUnreadCount(prev => prev + 1);
+            
+            // Auto-show connection request modal for immediate response
+            if (newNotification.type === 'connection_request') {
+              console.log('🤝 Connection request notification - showing modal');
+              onConnectionRequest(
+                newNotification.data.connection_request_id, 
+                newNotification.data.sender_name
+              );
+            }
+            
+            // Show success message for accepted connections
+            if (newNotification.type === 'connection_accepted') {
+              console.log('✅ Connection accepted notification');
+              // You could add a toast notification here or handle it in the parent component
+            }
+            
+            // Play notification sound
+            playNotificationSound();
           }
-        }
-      )
-      .subscribe();
+        )
+        .on('postgres_changes',
+          { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`
+          },
+          (payload) => {
+            const updatedNotification = payload.new as Notification;
+            setNotifications(prev => 
+              prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
+            );
+            
+            // Update unread count
+            if (updatedNotification.is_read) {
+              setUnreadCount(prev => Math.max(0, prev - 1));
+            }
+          }
+        )
+        .subscribe();
 
-    return () => {
-      channel.unsubscribe();
-    };
+      return () => {
+        channel.unsubscribe();
+      };
+    });
   };
 
   const playNotificationSound = () => {
