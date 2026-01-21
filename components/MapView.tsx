@@ -3,12 +3,12 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { type Profile, type NearbyUser } from '@/lib/supabase';
+import { type UserProfile, type NearbyUser } from '@/lib/supabase';
 
 type MapViewProps = {
   userLocation: { lat: number; lng: number };
   nearbyUsers: NearbyUser[];
-  currentUser: Profile | null;
+  currentUser: UserProfile | null;
   onUserClick: (user: NearbyUser) => void;
   onCurrentUserClick: () => void;
 };

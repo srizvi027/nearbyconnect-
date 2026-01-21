@@ -10,7 +10,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Database types - Updated for interests field compatibility
-export type Profile = {
+export type UserProfile = {
   id: string
   username: string
   full_name: string
@@ -27,6 +27,9 @@ export type Profile = {
   updated_at: string
 }
 
+// Keep old Profile for backward compatibility
+export type Profile = UserProfile
+
 export type NearbyUser = {
   user_id: string;
   username: string;
@@ -42,7 +45,7 @@ export type Connection = {
   id: string;
   user_id_1: string;
   user_id_2: string;
-  profile: Profile;
+  profile: UserProfile;
   distance?: number;
   unread_count?: number;
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, type Profile, type NearbyUser, type Connection } from '@/lib/supabase';
+import { supabase, type UserProfile, type NearbyUser, type Connection } from '@/lib/supabase';
 import dynamic from 'next/dynamic';
 
 // Dynamically import map component (client-side only)
@@ -17,7 +17,7 @@ type User = {
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [nearbyUsers, setNearbyUsers] = useState<NearbyUser[]>([]);
