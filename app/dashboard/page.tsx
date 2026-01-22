@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 
 // Dynamically import map component (client-side only)
 const MapView = dynamic(() => import('@/components/MapView'), { ssr: false });
-const ChatWindow = dynamic(() => import('@/components/ChatWindow'), { ssr: false });
+const FloatingChat = dynamic(() => import('@/components/FloatingChat'), { ssr: false });
 const NotificationBell = dynamic(() => import('@/components/NotificationBell'), { ssr: false });
 
 type User = {
@@ -24,9 +24,6 @@ export default function Dashboard() {
   const [nearbyUsers, setNearbyUsers] = useState<NearbyUser[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedUser, setSelectedUser] = useState<NearbyUser | null>(null);
-  const [showChatWindow, setShowChatWindow] = useState(false);
-  const [selectedConnection, setSelectedConnection] = useState<Connection | null>(null);
-  const [showFullChat, setShowFullChat] = useState(false);
   const [nearbyCount, setNearbyCount] = useState(0);
   const [showMyProfile, setShowMyProfile] = useState(false);
   const [locationStatus, setLocationStatus] = useState<'loading' | 'granted' | 'denied' | 'error'>('loading');
@@ -499,10 +496,7 @@ export default function Dashboard() {
     setPendingRequest(null);
   };
 
-  const openChat = (connection: Connection) => {
-    setSelectedConnection(connection);
-    setShowChatWindow(true);
-  };
+
 
   if (loading) {
     return (
@@ -756,12 +750,9 @@ export default function Dashboard() {
                         {conn.distance ? `${(conn.distance / 1000).toFixed(1)} km away` : 'Connected'}
                       </p>
                     </div>
-                    <button
-                      onClick={() => openChat(conn)}
-                      className="px-2 py-1 sm:px-3 sm:py-1 bg-[#093FB4] hover:bg-[#0652e8] text-white rounded-full text-xs font-medium flex-shrink-0"
-                    >
-                      Chat
-                    </button>
+                    <div className="px-2 py-1 sm:px-3 sm:py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium flex-shrink-0">
+                      Connected
+                    </div>
                     {conn.unread_count! > 0 && (
                       <span className="bg-[#ED3500] text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
                         {conn.unread_count}
@@ -771,13 +762,7 @@ export default function Dashboard() {
                 ))
               )}
             </div>
-            <button
-              onClick={() => setShowFullChat(true)}
-              className="w-full mt-3 px-3 py-2 sm:px-4 sm:py-2 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-lg text-xs sm:text-sm font-medium"
-            >
-              <span className="hidden sm:inline">View all connections</span>
-              <span className="sm:hidden">View all</span>
-            </button>
+
           </div>
 
           <div className="p-3 sm:p-4 flex-1 overflow-y-auto">
@@ -933,12 +918,12 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Chat Window */}
-      {showChatWindow && selectedConnection && (
-        <ChatWindow
-          connection={selectedConnection}
-          currentUserId={user?.id || ''}
-          onClose={() => setShowChatWindow(false)}
+      {/* Floating Chat */}
+      {user && (
+        <FloatingChat
+          connections={connections}
+          currentUserId={user.id}
+          onConnectionUpdate={fetchConnections}
         />
       )}
 
