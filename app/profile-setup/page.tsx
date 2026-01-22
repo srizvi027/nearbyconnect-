@@ -247,7 +247,7 @@ export default function ProfileSetup() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 p-4 sm:p-5 shadow-2xl border-4 border-[#093FB4]/20">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 p-4 sm:p-5 shadow-2xl border-2 border-[#093FB4]/20">
             <img 
               src="/nearby-connect.png" 
               alt="NearbyConnect Logo" 

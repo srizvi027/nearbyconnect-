@@ -520,15 +520,15 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
         <div className="px-3 sm:px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-10 h-10 sm:w-14 sm:h-14 bg-white rounded-xl p-2 sm:p-3 shadow-lg">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-xl p-2 sm:p-3 shadow-lg border border-gray-200">
               <img 
                 src="/nearby-connect.png" 
                 alt="NearbyConnect Logo" 
                 className="w-full h-full object-contain"
               />
             </div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-800">NearbyConnect</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">NearbyConnect</h1>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">

@@ -19,20 +19,22 @@ export default function LoadingScreen({ show, message = 'Loading...' }: LoadingS
       
       <div className="text-center relative z-10">
         <div className="relative mb-8">
-          {/* Logo container with spinning border */}
-          <div className="w-32 h-32 mx-auto relative">
-            <div className="absolute inset-0 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-            <div className="w-full h-full bg-white rounded-full flex items-center justify-center p-6 shadow-2xl">
+          {/* Logo container with spinning border - Much larger and more visible */}
+          <div className="w-40 h-40 mx-auto relative">
+            <div className="absolute inset-0 border-8 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="absolute inset-1 border-4 border-[#FFD8D8] border-b-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '3s' }}></div>
+            <div className="w-full h-full bg-white rounded-full flex items-center justify-center p-8 shadow-2xl">
               <img 
                 src="/nearby-connect.png" 
                 alt="NearbyConnect Logo" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain animate-pulse"
               />
             </div>
           </div>
           {/* Multiple pulsing rings for better visibility */}
-          <div className="absolute inset-0 border-2 border-white/50 rounded-full animate-ping"></div>
-          <div className="absolute inset-2 border-2 border-[#FFD8D8]/60 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+          <div className="absolute inset-0 border-4 border-white/40 rounded-full animate-ping"></div>
+          <div className="absolute inset-4 border-2 border-[#FFD8D8]/50 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+          <div className="absolute inset-8 border-2 border-white/60 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
         </div>
         <h2 className="text-3xl font-bold text-white mb-3 drop-shadow-lg">NearbyConnect</h2>
         <p className="text-[#FFD8D8] text-lg font-medium animate-pulse mb-6">{message}</p>
