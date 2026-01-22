@@ -73,10 +73,10 @@ export default function FloatingChat({ connections, currentUserId, onConnectionU
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    if (activeChat && chatSessions[activeChat]?.messages.length > 0) {
+    if (activeChat && chatSessions[activeChat]?.messages && chatSessions[activeChat].messages.length > 0) {
       setTimeout(() => scrollToBottom(), 50);
     }
-  }, [activeChat, chatSessions[activeChat]?.messages]);
+  }, [activeChat, activeChat ? chatSessions[activeChat]?.messages : null]);
 
   // Cleanup subscriptions on unmount
   useEffect(() => {
@@ -681,9 +681,11 @@ export default function FloatingChat({ connections, currentUserId, onConnectionU
                         <button
                           key={index}
                           onClick={() => {
-                            const newValue = (chatSessions[activeChat]?.newMessage || '') + emoji;
-                            handleInputChange(activeChat, newValue);
-                            setShowEmojiPicker(false);
+                            if (activeChat) {
+                              const newValue = (chatSessions[activeChat]?.newMessage || '') + emoji;
+                              handleInputChange(activeChat, newValue);
+                              setShowEmojiPicker(false);
+                            }
                           }}
                           className="text-lg hover:bg-gray-100 rounded-lg p-1 transition-colors"
                         >
@@ -705,9 +707,9 @@ export default function FloatingChat({ connections, currentUserId, onConnectionU
                   <input
                     type="text"
                     value={chatSessions[activeChat]?.newMessage || ''}
-                    onChange={(e) => handleInputChange(activeChat, e.target.value)}
+                    onChange={(e) => activeChat && handleInputChange(activeChat, e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
+                      if (e.key === 'Enter' && !e.shiftKey && activeChat) {
                         e.preventDefault();
                         e.stopPropagation();
                         if (chatSessions[activeChat]?.newMessage.trim()) {
@@ -720,8 +722,8 @@ export default function FloatingChat({ connections, currentUserId, onConnectionU
                     disabled={chatSessions[activeChat]?.isLoading}
                   />
                   <button
-                    onClick={() => sendMessage(activeChat)}
-                    disabled={chatSessions[activeChat]?.isLoading || !chatSessions[activeChat]?.newMessage.trim()}
+                    onClick={() => activeChat && sendMessage(activeChat)}
+                    disabled={!activeChat || chatSessions[activeChat]?.isLoading || !chatSessions[activeChat]?.newMessage.trim()}
                     className="px-4 py-2 bg-gradient-to-r from-[#093FB4] to-[#0652e8] hover:from-[#0652e8] hover:to-[#093FB4] text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {chatSessions[activeChat]?.isLoading ? (
