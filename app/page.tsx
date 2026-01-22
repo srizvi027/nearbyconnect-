@@ -203,10 +203,13 @@ function AuthPage() {
           <div className="max-w-md text-center">
             {/* Logo/Icon */}
             <div className="mb-8 relative">
-              <div className="w-32 h-32 mx-auto bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center shadow-2xl border border-white/20">
-                <svg className="w-16 h-16 text-[#FFD8D8]" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
-                </svg>
+              <div className="w-32 h-32 mx-auto bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center shadow-2xl border border-white/20 p-4">
+                <img 
+                  src="/nearby-connect.png" 
+                  alt="NearbyConnect Logo" 
+                  className="w-full h-full object-contain"
+                  style={{ filter: 'drop-shadow(0 4px 8px rgba(255, 255, 255, 0.3))' }}
+                />
               </div>
               {/* Animated rings */}
               <div className="absolute inset-0 border-4 border-[#FFD8D8] rounded-3xl animate-ping opacity-20"></div>
@@ -549,10 +552,37 @@ function AuthPage() {
 export default function Home() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[#FFFCFB]">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#093FB4] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#093FB4] font-medium">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#093FB4] to-[#0652e8] relative overflow-hidden">
+        {/* Background animations */}
+        <div className="absolute top-20 left-20 w-64 h-64 bg-[#FFD8D8] rounded-full opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#ED3500] rounded-full opacity-10 animate-pulse" style={{ animationDelay: '1s' }}></div>
+        
+        <div className="text-center relative z-10">
+          <div className="relative mb-6">
+            {/* Logo container with spinning border */}
+            <div className="w-24 h-24 mx-auto relative">
+              <div className="absolute inset-0 border-4 border-[#FFD8D8] border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-full h-full bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center p-3">
+                <img 
+                  src="/nearby-connect.png" 
+                  alt="NearbyConnect Logo" 
+                  className="w-full h-full object-contain animate-pulse"
+                  style={{ filter: 'drop-shadow(0 2px 4px rgba(255, 255, 255, 0.5))' }}
+                />
+              </div>
+            </div>
+            {/* Pulsing rings */}
+            <div className="absolute inset-0 border-2 border-white/30 rounded-full animate-ping"></div>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">NearbyConnect</h2>
+          <p className="text-[#FFD8D8] font-medium animate-pulse">Loading your experience...</p>
+          
+          {/* Loading dots */}
+          <div className="flex justify-center items-center mt-4 space-x-2">
+            <div className="w-2 h-2 bg-[#FFD8D8] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-2 h-2 bg-[#FFD8D8] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-2 h-2 bg-[#FFD8D8] rounded-full animate-bounce"></div>
+          </div>
         </div>
       </div>
     }>

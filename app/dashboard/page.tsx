@@ -515,10 +515,12 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
         <div className="px-3 sm:px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-xl flex items-center justify-center">
-              <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
-              </svg>
+            <div className="w-8 h-8 sm:w-12 sm:h-12 bg-white rounded-xl p-1 sm:p-2">
+              <img 
+                src="/nearby-connect.png" 
+                alt="NearbyConnect Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <h1 className="text-lg sm:text-xl font-bold text-gray-800">NearbyConnect</h1>
           </div>
