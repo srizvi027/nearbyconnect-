@@ -58,13 +58,25 @@ export default function FloatingChat({ connections, currentUserId, onConnectionU
     setTotalUnreadCount(total);
   }, [chatSessions]);
 
-  // Load messages for active chat
+  // Load messages for active chat and scroll to bottom
   useEffect(() => {
     if (activeChat && !chatSessions[activeChat]?.messages.length) {
       fetchMessages(activeChat);
       subscribeToMessages(activeChat);
     }
+    
+    // Scroll to bottom when switching chats
+    if (activeChat) {
+      setTimeout(() => scrollToBottom(), 100);
+    }
   }, [activeChat]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (activeChat && chatSessions[activeChat]?.messages.length > 0) {
+      setTimeout(() => scrollToBottom(), 50);
+    }
+  }, [activeChat, chatSessions[activeChat]?.messages]);
 
   // Cleanup subscriptions on unmount
   useEffect(() => {
@@ -137,14 +149,14 @@ export default function FloatingChat({ connections, currentUserId, onConnectionU
             ...prev,
             [connectionId]: {
               ...prev[connectionId],
-              messages: [...(prev[connectionId]?.messages || []), newMsg],
+              messages: [...(prev[connectionId]?.messages || []).filter(m => !m.id.startsWith('temp-')), newMsg],
               unreadCount: newMsg.sender_id !== currentUserId 
                 ? (prev[connectionId]?.unreadCount || 0) + 1
                 : prev[connectionId]?.unreadCount || 0
             }
           }));
 
-          // Auto-scroll if chat is active
+          // Auto-scroll if chat is active and scroll to bottom
           if (activeChat === connectionId) {
             setTimeout(scrollToBottom, 100);
             if (newMsg.sender_id !== currentUserId) {
@@ -214,11 +226,23 @@ export default function FloatingChat({ connections, currentUserId, onConnectionU
 
     const messageContent = session.newMessage.trim();
     
+    // Create optimistic message for immediate UI feedback
+    const tempMessage = {
+      id: `temp-${Date.now()}`,
+      content: messageContent,
+      sender_id: currentUserId,
+      connection_id: connectionId,
+      is_read: false,
+      created_at: new Date().toISOString()
+    };
+
+    // Clear input and add optimistic message immediately
     setChatSessions(prev => ({
       ...prev,
       [connectionId]: {
         ...prev[connectionId],
         newMessage: '',
+        messages: [...(prev[connectionId]?.messages || []), tempMessage],
         isLoading: true,
         isTyping: false
       }
@@ -227,24 +251,43 @@ export default function FloatingChat({ connections, currentUserId, onConnectionU
     // Send typing indicator stop
     sendTypingIndicator(connectionId, false);
 
+    // Scroll to bottom immediately
+    setTimeout(() => scrollToBottom(), 50);
+
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           connection_id: connectionId,
           sender_id: currentUserId,
           content: messageContent
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Replace temp message with real message
+      if (data) {
+        setChatSessions(prev => ({
+          ...prev,
+          [connectionId]: {
+            ...prev[connectionId],
+            messages: prev[connectionId].messages.map(msg => 
+              msg.id === tempMessage.id ? data : msg
+            )
+          }
+        }));
+      }
       
     } catch (error) {
       console.error('Error sending message:', error);
-      // Restore message on error
+      // Remove failed message and restore input
       setChatSessions(prev => ({
         ...prev,
         [connectionId]: {
           ...prev[connectionId],
+          messages: prev[connectionId].messages.filter(msg => msg.id !== tempMessage.id),
           newMessage: messageContent
         }
       }));
@@ -308,7 +351,12 @@ export default function FloatingChat({ connections, currentUserId, onConnectionU
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'end'
+      });
+    }
   };
 
   const showNotification = (message: Message, connection?: Connection) => {
@@ -661,7 +709,10 @@ export default function FloatingChat({ connections, currentUserId, onConnectionU
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        sendMessage(activeChat);
+                        e.stopPropagation();
+                        if (chatSessions[activeChat]?.newMessage.trim()) {
+                          sendMessage(activeChat);
+                        }
                       }
                     }}
                     placeholder="Type a message..."
