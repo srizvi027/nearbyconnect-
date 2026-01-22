@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, type UserProfile, type NearbyUser, type Connection } from '@/lib/supabase';
 import dynamic from 'next/dynamic';
+import { useNavigationLoading } from '@/components/LoadingScreen';
 
 // Dynamically import map component (client-side only)
 const MapView = dynamic(() => import('@/components/MapView'), { ssr: false });
@@ -17,6 +18,7 @@ type User = {
 
 export default function Dashboard() {
   const router = useRouter();
+  const { isLoading, showLoading, hideLoading, LoadingScreen } = useNavigationLoading();
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -416,11 +418,13 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
+    showLoading('Signing out...');
     try {
       await supabase.auth.signOut();
       router.push('/');
     } catch (error: unknown) {
       console.error('Error logging out:', error);
+      hideLoading();
     }
   };
 
@@ -510,12 +514,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#FFFCFB]">
+    <>
+      <LoadingScreen />
+      <div className="h-screen flex flex-col bg-[#FFFCFB]">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
         <div className="px-3 sm:px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-12 sm:h-12 bg-white rounded-xl p-1 sm:p-2">
+            <div className="w-10 h-10 sm:w-14 sm:h-14 bg-white rounded-xl p-2 sm:p-3 shadow-lg">
               <img 
                 src="/nearby-connect.png" 
                 alt="NearbyConnect Logo" 
@@ -979,6 +985,7 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

@@ -247,12 +247,11 @@ export default function ProfileSetup() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-[#093FB4] to-[#0652e8] rounded-2xl flex items-center justify-center mx-auto mb-4 p-3 sm:p-4">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 p-4 sm:p-5 shadow-2xl border-4 border-[#093FB4]/20">
             <img 
               src="/nearby-connect.png" 
               alt="NearbyConnect Logo" 
               className="w-full h-full object-contain"
-              style={{ filter: 'drop-shadow(0 2px 4px rgba(255, 255, 255, 0.3))' }}
             />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Complete Your Profile</h1>

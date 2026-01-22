@@ -89,9 +89,11 @@ function AuthPage() {
 
         if (data.user) {
           setSuccess('Successfully logged in! Redirecting...');
+          setLoading(true); // Keep loading state active
+          // Show loading for a bit longer to display the redirect message
           setTimeout(() => {
             router.push('/dashboard');
-          }, 1500);
+          }, 2000);
         }
       } else {
         // Sign Up
@@ -203,16 +205,16 @@ function AuthPage() {
           <div className="max-w-md text-center">
             {/* Logo/Icon */}
             <div className="mb-8 relative">
-              <div className="w-32 h-32 mx-auto bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center shadow-2xl border border-white/20 p-4">
+              <div className="w-40 h-40 mx-auto bg-white rounded-3xl flex items-center justify-center shadow-2xl border-4 border-white/20 p-6">
                 <img 
                   src="/nearby-connect.png" 
                   alt="NearbyConnect Logo" 
                   className="w-full h-full object-contain"
-                  style={{ filter: 'drop-shadow(0 4px 8px rgba(255, 255, 255, 0.3))' }}
                 />
               </div>
               {/* Animated rings */}
-              <div className="absolute inset-0 border-4 border-[#FFD8D8] rounded-3xl animate-ping opacity-20"></div>
+              <div className="absolute inset-0 border-4 border-[#FFD8D8] rounded-3xl animate-ping opacity-30"></div>
+              <div className="absolute inset-2 border-2 border-white rounded-3xl animate-pulse opacity-50"></div>
             </div>
 
             <h1 className="text-5xl font-bold mb-4 drop-shadow-lg">
@@ -558,30 +560,30 @@ export default function Home() {
         <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#ED3500] rounded-full opacity-10 animate-pulse" style={{ animationDelay: '1s' }}></div>
         
         <div className="text-center relative z-10">
-          <div className="relative mb-6">
-            {/* Logo container with spinning border */}
-            <div className="w-24 h-24 mx-auto relative">
-              <div className="absolute inset-0 border-4 border-[#FFD8D8] border-t-transparent rounded-full animate-spin"></div>
-              <div className="w-full h-full bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center p-3">
+          <div className="relative mb-8">
+            {/* Logo container with spinning border - Made much larger */}
+            <div className="w-32 h-32 mx-auto relative">
+              <div className="absolute inset-0 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-full h-full bg-white rounded-full flex items-center justify-center p-6 shadow-2xl">
                 <img 
                   src="/nearby-connect.png" 
                   alt="NearbyConnect Logo" 
-                  className="w-full h-full object-contain animate-pulse"
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(255, 255, 255, 0.5))' }}
+                  className="w-full h-full object-contain"
                 />
               </div>
             </div>
-            {/* Pulsing rings */}
-            <div className="absolute inset-0 border-2 border-white/30 rounded-full animate-ping"></div>
+            {/* Multiple pulsing rings for better visibility */}
+            <div className="absolute inset-0 border-2 border-white/50 rounded-full animate-ping"></div>
+            <div className="absolute inset-2 border-2 border-[#FFD8D8]/60 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">NearbyConnect</h2>
-          <p className="text-[#FFD8D8] font-medium animate-pulse">Loading your experience...</p>
+          <h2 className="text-3xl font-bold text-white mb-3 drop-shadow-lg">NearbyConnect</h2>
+          <p className="text-[#FFD8D8] text-lg font-medium animate-pulse mb-6">Loading your experience...</p>
           
-          {/* Loading dots */}
-          <div className="flex justify-center items-center mt-4 space-x-2">
-            <div className="w-2 h-2 bg-[#FFD8D8] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-            <div className="w-2 h-2 bg-[#FFD8D8] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-            <div className="w-2 h-2 bg-[#FFD8D8] rounded-full animate-bounce"></div>
+          {/* Enhanced loading dots */}
+          <div className="flex justify-center items-center space-x-3">
+            <div className="w-3 h-3 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-3 h-3 bg-[#FFD8D8] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-3 h-3 bg-white rounded-full animate-bounce"></div>
           </div>
         </div>
       </div>
