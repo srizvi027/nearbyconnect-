@@ -205,7 +205,7 @@ function AuthPage() {
           <div className="max-w-md text-center">
             {/* Map/Location Icon */}
             <div className="mb-8 relative">
-              <div className="w-40 h-40 mx-auto bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center shadow-2xl border-4 border-white/20">
+              <div className="w-40 h-40 mx-auto bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center shadow-2xl">
                 <svg className="w-20 h-20 text-[#FFD8D8]" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
                 </svg>
@@ -272,7 +272,7 @@ function AuthPage() {
         <div className="w-full max-w-md relative z-10 mt-16 lg:mt-0">
           {/* Logo above login form */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto bg-white rounded-2xl shadow-2xl p-4 mb-4">
+            <div className="w-28 h-28 mx-auto bg-white rounded-2xl shadow-2xl p-5 mb-4">
               <img 
                 src="/nearby-connect.png" 
                 alt="NearbyConnect Logo" 
